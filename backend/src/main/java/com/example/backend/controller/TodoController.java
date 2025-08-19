@@ -1,6 +1,9 @@
 package com.example.backend.controller;
 
 import org.springframework.web.bind.annotation.*;
+
+import com.example.backend.dto.CreateTodoReq;
+import com.example.backend.dto.UpdateTodoReq;
 import com.example.backend.entity.Todo;
 import com.example.backend.exception.NotFoundException;
 import com.example.backend.repository.TodoRepository;
@@ -9,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -29,33 +33,30 @@ public class TodoController {
     // 作成(titleは必須)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201 Createdを返す
-    public Todo create(@RequestBody Todo req) {
-        if (req.getTitle() == null || req.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Title is required");
-        }
-        // completedが未指定でもEntity側のデフォルトfalseが適用される
+    public Todo create(@Valid @RequestBody CreateTodoReq req) {
         Todo toSave = new Todo();
         toSave.setTitle(req.getTitle().trim());
-        toSave.setCompleted(req.isCompleted());
+        // completed未指定(null)ならfalseにする
+        toSave.setCompleted(Boolean.TRUE.equals(req.getCompleted()));
         return repo.save(toSave);
     }
 
     // 更新：指定IDのtitleとcompletedを更新
     @PutMapping("/{id}")
-    public Todo update(@PathVariable Long id, @RequestBody Todo req) {
-        var todo = repo.findById(id).orElseThrow(() -> new NotFoundException("todo not found"));
+    public Todo update(@PathVariable Long id, @Valid @RequestBody UpdateTodoReq req) {
+        Todo todo = repo.findById(id).orElseThrow(() -> new NotFoundException("todo not found"));
 
         // タイトルが来ていれば更新(nullなら据え置き)
         if (req.getTitle() != null) {
-            // var=ローカル変数の型推論→型が右辺で明確にわかる時に用いる(例：)
-            var trimmed = req.getTitle().trim();
-            if (trimmed.isEmpty())
+            String t = req.getTitle().trim();
+            if (t.isEmpty())
                 throw new IllegalArgumentException("title must not be blank");
-            todo.setTitle(trimmed);
+            todo.setTitle(t);
         }
-        // completedはbooleanなので送られてきた値で上書きしたい場合はそのまま反映
-        todo.setCompleted(req.isCompleted());
 
+        if (req.getCompleted() != null) {
+            todo.setCompleted(req.getCompleted());
+        }
         return repo.save(todo);
     }
 
