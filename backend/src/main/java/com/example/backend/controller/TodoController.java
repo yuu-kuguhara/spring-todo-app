@@ -8,6 +8,8 @@ import com.example.backend.entity.Todo;
 import com.example.backend.exception.NotFoundException;
 import com.example.backend.repository.TodoRepository;
 import java.util.List;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +29,7 @@ public class TodoController {
     // 一覧
     @GetMapping
     public List<Todo> list() {
-        return repo.findAll();
+        return repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     // 作成(titleは必須)
@@ -38,7 +40,7 @@ public class TodoController {
         toSave.setTitle(req.getTitle().trim());
         // completed未指定(null)ならfalseにする
         toSave.setCompleted(Boolean.TRUE.equals(req.getCompleted()));
-        return repo.save(toSave);
+        return repo.save(toSave); // repo.save→insert
     }
 
     // 更新：指定IDのtitleとcompletedを更新
