@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 
 import jakarta.validation.Valid;
-import lombok.experimental.var;
 
 import com.example.backend.dto.TodoRes;
 
@@ -32,7 +31,7 @@ public class TodoController {
     public List<TodoRes> list() {
         List<Todo> entities = repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<TodoRes> response = entities.stream()
-                .map(this::toRes)
+                .map(this::toRes) // EntityをDTOに変換
                 .toList();
         return response;
     }
@@ -52,7 +51,6 @@ public class TodoController {
         return res;
     }
 
-    // ************************************明日はここから**********************************************
     // 更新：指定IDのtitleとcompletedを更新
     @PutMapping("/{id}")
     public TodoRes update(@PathVariable Long id, @Valid @RequestBody UpdateTodoReq req) {
@@ -80,7 +78,7 @@ public class TodoController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        boolean exists = repo.existsById(id);
+        boolean exists = repo.existsById(id); // existById→指定したIDがDBに存在するかどうかを真偽値で返す
         if (!exists) {
             throw new NotFoundException("todo not found");
         }
