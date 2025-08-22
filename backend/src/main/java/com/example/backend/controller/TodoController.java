@@ -11,10 +11,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import jakarta.validation.Valid;
+import lombok.experimental.var;
+
+import com.example.backend.dto.TodoRes;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -28,47 +29,71 @@ public class TodoController {
 
     // 一覧
     @GetMapping
-    public List<Todo> list() {
-        return repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    public List<TodoRes> list() {
+        List<Todo> entities = repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<TodoRes> response = entities.stream()
+                .map(this::toRes)
+                .toList();
+        return response;
     }
 
     // 作成(titleは必須)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201 Createdを返す
-    public Todo create(@Valid @RequestBody CreateTodoReq req) {
+    public TodoRes create(@Valid @RequestBody CreateTodoReq req) {
         Todo toSave = new Todo();
-        toSave.setTitle(req.getTitle().trim());
-        // completed未指定(null)ならfalseにする
-        toSave.setCompleted(Boolean.TRUE.equals(req.getCompleted()));
-        return repo.save(toSave); // repo.save→insert
+        String title = req.getTitle().trim();
+        toSave.setTitle(title);
+        // completed未指定(null)ならデフォルトのfalseが入る
+        boolean completed = Boolean.TRUE.equals(req.getCompleted());
+        toSave.setCompleted(completed);
+        Todo saved = repo.save(toSave);
+        TodoRes res = toRes(saved);
+        return res;
     }
 
+    // ************************************明日はここから**********************************************
     // 更新：指定IDのtitleとcompletedを更新
     @PutMapping("/{id}")
-    public Todo update(@PathVariable Long id, @Valid @RequestBody UpdateTodoReq req) {
+    public TodoRes update(@PathVariable Long id, @Valid @RequestBody UpdateTodoReq req) {
         Todo todo = repo.findById(id).orElseThrow(() -> new NotFoundException("todo not found"));
 
         // タイトルが来ていれば更新(nullなら据え置き)
         if (req.getTitle() != null) {
-            String t = req.getTitle().trim();
-            if (t.isEmpty())
+            String trimmed = req.getTitle().trim();
+            if (trimmed.isEmpty())
                 throw new IllegalArgumentException("title must not be blank");
-            todo.setTitle(t);
+            todo.setTitle(trimmed);
         }
 
+        // completed 指定時のみ更新
         if (req.getCompleted() != null) {
             todo.setCompleted(req.getCompleted());
         }
-        return repo.save(todo);
+
+        Todo saved = repo.save(todo);
+        TodoRes res = toRes(saved);
+        return res;
     }
 
     // 削除：指定IDのTodoを削除
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        if (!repo.existsById(id)) {
+        boolean exists = repo.existsById(id);
+        if (!exists) {
             throw new NotFoundException("todo not found");
         }
         repo.deleteById(id);
+    }
+
+    // EntityをDTOに変換
+    private TodoRes toRes(Todo t) {
+        return new TodoRes(
+                t.getId(),
+                t.getTitle(),
+                t.isCompleted(),
+                t.getCreatedAt(),
+                t.getUpdateAt());
     }
 }
