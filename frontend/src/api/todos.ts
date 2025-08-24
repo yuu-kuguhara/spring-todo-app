@@ -1,6 +1,6 @@
 import type { Todo, CreateTodoReq } from "@/types/todo";
 
-const BASE = "http://localhost:8080/api/todos";
+const BASE = "http://localhost:8080/api/todos"; //BASE→他の関数から同じurlを書かずに済む
 
 export async function fetchTodos() : Promise<Todo[]> {
     const res = await fetch(BASE, { method: "GET" });
