@@ -3,5 +3,17 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",      // ★ Viteはこれ推奨（TS5以降）
+    "lib": ["ESNext", "DOM"],           // ★ URLやimport.metaなどを型で認識
+    "types": ["vite/client", "node"],   // ★ import.meta と Node型の両方
+    // 既存設定は残したまま
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
 }
