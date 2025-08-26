@@ -25,3 +25,4 @@ export default function TodoItem({ todo }: Props) {
     </li>
   );
 }
+//new Date(todo.createdAt)=文字列をDateオブジェクトに変換
