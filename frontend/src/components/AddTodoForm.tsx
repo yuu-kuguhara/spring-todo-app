@@ -32,6 +32,7 @@ export default function AddTodoForm({ onAdd }: Props) { //{onAdd}をPropsから�
           padding: 8,
           border: "1px solid #ccc",
           borderRadius: 8,
+          width: "100%",
         }}
       />
       <button
