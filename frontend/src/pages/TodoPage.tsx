@@ -57,16 +57,24 @@ export default function TodoPage() {
           boxShadow: "0 2px 10px rgba(0,0,0,.06)",
         }}
       >
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>
-          ToDo
+        <h1
+          style={{
+            fontSize: 24,
+            fontWeight: 700,
+            marginBottom: 16,
+            color: "#374151",
+          }}
+        >
+          ToDoApp
         </h1>
-
         <AddTodoForm onAdd={handleAdd} />
-
-        {loading && <p>読み込み中...</p>}
+        {/* 条件付きレンダリング */}
+        {loading && <p>読み込み中...</p>}{" "}
+        {/* ロード中(loading=true)のときのみ表示 */}
         {error && <p style={{ color: "crimson", marginBottom: 8 }}>{error}</p>}
-
+        {/* エラー時のみ赤字で表示 */}
         {!loading && <TodoList todos={todos} />}
+        {/* ロード完了後に一覧を描画 */}
       </main>
     </div>
   );
