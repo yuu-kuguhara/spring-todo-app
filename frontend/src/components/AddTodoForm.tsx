@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 
-type Props = { //Props型定義
+type Props = {
+  //Props型定義
   onAdd: (title: string) => Promise<void> | void;
 };
 
-export default function AddTodoForm({ onAdd }: Props) { //{onAdd}をPropsから受け取る
+export default function AddTodoForm({ onAdd }: Props) {
+  //{onAdd}をPropsから受け取る
   const [title, setTitle] = useState("");
   const [posting, setPosting] = useState(false); //送信中フラグ→連打防止・ボタンの無効化・「追加中...」表示に用いる
 
