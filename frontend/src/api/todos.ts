@@ -40,3 +40,11 @@ export async function updateTodoCompleted(
   return res.json();
   // const = res→同じスコープ内で同じ名前の定数を複数回定義することはできない(別の関数ごとに定義するのはok)
 }
+
+// 削除
+export async function deleteTodo(id: number): Promise<void> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("タスクの削除に失敗したよ！");
+}
