@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Todo } from "@/types/todo";
-import { createTodo, fetchTodos } from "@/api/todos";
+import {
+  createTodo,
+  fetchTodos,
+  updateTodoCompleted,
+  deleteTodo,
+} from "@/api/todos";
 import AddTodoForm from "@/components/AddTodoForm";
 import TodoList from "@/components/TodoList";
 
@@ -28,6 +33,37 @@ export default function TodoPage() {
       setTodos((prev) => [saved, ...prev]); //新しいタスクを先頭に追加
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "タスクの追加に失敗しました！");
+    }
+  }
+
+  // 完了トグルロジック
+  async function handleToggle(id: number, next: boolean) {
+    const prev = todos;
+    setTodos(
+      prev.map((todo: Todo) =>
+        todo.id === id ? { ...todo, completed: next } : todo
+      ) //map=各配列を変換して同じな側の新配列を返す
+    );
+    //楽観的UI更新(サーバの応答を待たずに先に画面を更新する手法)
+    try {
+      const updated = await updateTodoCompleted(id, next);
+      setTodos((curr) => curr.map((todo) => (todo.id === id ? updated : todo)));
+    } catch (e: unknown) {
+      setTodos(prev); //失敗したら元に戻す
+      setError(e instanceof Error ? e.message : "タスクの更新に失敗しました！");
+    }
+  }
+
+  // 削除ロジック
+  async function handleDelete(id: number) {
+    if (!confirm("本当に削除しますか??")) return;
+    const prev = todos;
+    setTodos(prev.filter((todo) => todo.id !== id)); //filter=条件に合う要素だけを抽出して短いかもしれない新配列を返す(残すならtrue, 捨てるならfalse)
+    try {
+      await deleteTodo(id);
+    } catch (e: unknown) {
+      setTodos(prev); //失敗したら元に戻す
+      setError(e instanceof Error ? e.message : "タスクの削除に失敗しました！");
     }
   }
 
@@ -73,7 +109,13 @@ export default function TodoPage() {
         {/* ロード中(loading=true)のときのみ表示 */}
         {error && <p style={{ color: "crimson", marginBottom: 8 }}>{error}</p>}
         {/* エラー時のみ赤字で表示 */}
-        {!loading && <TodoList todos={todos} />}
+        {!loading && (
+          <TodoList
+            todos={todos}
+            onToggle={handleToggle}
+            onDelete={handleDelete}
+          />
+        )}
         {/* ロード完了後に一覧を描画 */}
       </main>
     </div>
