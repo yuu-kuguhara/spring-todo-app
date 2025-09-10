@@ -48,3 +48,17 @@ export async function deleteTodo(id: number): Promise<void> {
   });
   if (!res.ok) throw new Error("タスクの削除に失敗したよ！");
 }
+
+// 編集
+export async function updateTodoTitle(
+  id: number,
+  title: string
+): Promise<Todo> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) throw new Error("タスクの更新に失敗したよ!");
+  return res.json();
+}

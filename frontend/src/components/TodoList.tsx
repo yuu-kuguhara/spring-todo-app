@@ -5,6 +5,7 @@ type Props = {
   todos: Todo[];
   onToggle?: (id: number, next: boolean) => void;
   onDelete?: (id: number) => void;
+  onEdit?: (id: number, title: string) => void;
 }; //Todo=１件のタスク(id, title, completed, createdAt, updatedAt)、todos=Todoの配列
 
 export default function TodoList({ todos, onToggle, onDelete }: Props) {
