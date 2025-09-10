@@ -8,7 +8,7 @@ type Props = {
   onEdit?: (id: number, title: string) => void;
 }; //Todo=１件のタスク(id, title, completed, createdAt, updatedAt)、todos=Todoの配列
 
-export default function TodoList({ todos, onToggle, onDelete }: Props) {
+export default function TodoList({ todos, onToggle, onDelete, onEdit }: Props) {
   if (todos.length === 0) return <p>タスクはありません</p>; //処理が1行の場合、{}は省略可能
   return (
     <ul
@@ -26,6 +26,7 @@ export default function TodoList({ todos, onToggle, onDelete }: Props) {
           todo={task}
           onToggle={onToggle}
           onDelete={onDelete}
+          onEdit={onEdit} //受け流し
         /> //task=mapの1要素の仮の名前(変数名)
       ))}
     </ul>

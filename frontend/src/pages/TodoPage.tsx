@@ -5,6 +5,7 @@ import {
   fetchTodos,
   updateTodoCompleted,
   deleteTodo,
+  updateTodoTitle,
 } from "@/api/todos";
 import AddTodoForm from "@/components/AddTodoForm";
 import TodoList from "@/components/TodoList";
@@ -42,7 +43,7 @@ export default function TodoPage() {
     setTodos(
       prev.map((todo: Todo) =>
         todo.id === id ? { ...todo, completed: next } : todo
-      ) //map=各配列を変換して同じな側の新配列を返す
+      ) //map=配列の各要素に対して関数を実行し、その結果からなる新しい配列を返す
     );
     //楽観的UI更新(サーバの応答を待たずに先に画面を更新する手法)
     try {
@@ -64,6 +65,26 @@ export default function TodoPage() {
     } catch (e: unknown) {
       setTodos(prev); //失敗したら元に戻す
       setError(e instanceof Error ? e.message : "タスクの削除に失敗しました！");
+    }
+  }
+
+  // 編集ロジック
+  async function handleEdit(id: number, newTitle: string) {
+    const title = newTitle.trim();
+    if (!title) return; //フロント側簡易ガード
+
+    const prev = todos;
+    setTodos(
+      prev.map((todo) => (todo.id === id ? { ...todo, title: newTitle } : todo))
+    );
+    try {
+      const updated = await updateTodoTitle(id, title);
+      setTodos((curr) =>
+        curr.map((todo) => (todo.id === id ? updated : todo))
+      );
+    } catch (e: unknown) {
+      setTodos(prev);
+      setError(e instanceof Error ? e.message : "タスクの編集に失敗しました！");
     }
   }
 
@@ -114,6 +135,7 @@ export default function TodoPage() {
             todos={todos}
             onToggle={handleToggle}
             onDelete={handleDelete}
+            onEdit={handleEdit}
           />
         )}
         {/* ロード完了後に一覧を描画 */}
